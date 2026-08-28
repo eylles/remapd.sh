@@ -1,0 +1,28 @@
+#!/bin/sh
+
+layouts="latam,ru(phonetic),gr"
+# echo "[remaps]: setting layouts: '$layouts'"
+# set keyboard layouts
+setxkbmap -layout "$layouts" 2>/dev/null
+
+# This script is called on startup to remap keys.
+# Increase key speed via a rate change
+# first number is the ms before repetition
+# second number is the repetitions per second
+# set repeat delay
+# set key repeat per second
+repeat_delay=300
+repeats_second=60
+# echo "[remaps]: setting repeat rate '$repeats_second' auto repeat delay '$repeat_delay'ms"
+xset r rate "$repeat_delay" "$repeats_second" 2>/dev/null
+# Map the caps lock key to super...
+setxkbmap -option "caps:super" 2>/dev/null
+# Map shift_R as hyper_r
+xmodmap -e 'keycode 62 = Hyper_R' 2>/dev/null
+# Add shift function to hyper
+xmodmap -e 'add Shift = Hyper_R' 2>/dev/null
+# Map caps to an unused keycode according to xmodmap -pke | less
+xmodmap -e 'keycode 184 = Caps_Lock' 2>/dev/null
+# When caps lock is pressed only once, treat it as escape.
+# When Shift_R is pressed only once, treat it as caps
+killall xcape 2>/dev/null ; xcape -t 150 -e 'Super_L=Escape;Hyper_R=Caps_Lock' 2>/dev/null

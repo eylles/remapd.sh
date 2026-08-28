@@ -1,0 +1,136 @@
+#!/bin/sh
+
+MAIN_PID="$$"
+
+# Configuration
+FIFO_PIPE="/tmp/udev_daemon.fifo"
+QUEUE_FILE="/tmp/udev_daemon.queue"
+RUNNING=1
+UDEVMONPID=""
+
+is_int() {
+    if [ -n "$1" ]; then
+        printf %d "$1" >/dev/null 2>&1
+    else
+        return 1
+    fi
+}
+
+u_awk () { awk "$@"; }
+if command -v mawk >/dev/null; then
+    u_awk () { mawk "$@"; }
+fi
+
+pid_tree_search () {
+    search_pid="$1"
+    search_name="$2"
+    word_length="${#search_name}"
+    rval=$(
+        pstree -Aps "${search_pid}" 2>/dev/null \
+        | u_awk \
+            -v name="$search_name" \
+            -v wlen="$word_length" \
+            '\
+                BEGIN { search=name"\\([[:digit:]]*\\)" } \
+                match( $0, search )\
+                {\
+                    print substr($0,RSTART+wlen+1,RLENGTH-wlen-2) \
+                }\
+            '
+        )
+    if is_int "$rval"; then
+        printf '%s\n' "$rval"
+    fi
+}
+
+cleanup() {
+    # Stop background udev monitoring if active
+    UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
+    if [ -n "$UDEVMONPID" ] && kill -0 "$UDEVMONPID" 2>/dev/null; then
+        kill "$UDEVMONPID" 2>/dev/null
+        echo "[remapd]: udevadm '$UDEVMONPID' killed"
+    fi
+
+    # Clean IPC assets
+    rm -f "$FIFO_PIPE" "$QUEUE_FILE"
+    if [ -n "$READER_PID" ]; then
+        kill "$READER_PID" 2>/dev/null
+        echo "[remapd]: reader '$READER_PID' killed"
+    fi
+    exit 0
+}
+
+sig_ignore() {
+    :
+}
+
+sig_handler() {
+    RUNNING=0
+}
+
+ipc_handler() {
+    if [ -s "$QUEUE_FILE" ]; then
+        mv "$QUEUE_FILE" "$QUEUE_FILE.work"
+        touch "$QUEUE_FILE"
+        
+        while read -r ACTION; do
+            [ -z "$ACTION" ] && continue
+            case "$ACTION" in
+                "status")        printf "Daemon is running.\n" ;;
+                "remap")         remaps ;;
+                "set-touchpad")  set-touchpad ;;
+                "stop")          RUNNING=0 ;;
+            esac
+        done < "$QUEUE_FILE.work"
+        rm -f "$QUEUE_FILE.work"
+    fi
+}
+
+nudge() {
+    kill -USR1 "$MAIN_PID" 2>/dev/null
+}
+
+# assign traps
+trap sig_handler INT TERM
+trap sig_ignore HUP CONT USR2
+trap ipc_handler USR1
+trap cleanup EXIT
+
+# initialize named pipe
+rm -f "$FIFO_PIPE" "$QUEUE_FILE"
+mkfifo -m 600 "$FIFO_PIPE"
+touch "$QUEUE_FILE"
+
+# Background Reader
+(
+    while true; do
+        if read -r line < "$FIFO_PIPE"; then
+            if [ -n "$line" ]; then
+                printf "%s\n" "$line" >> "$QUEUE_FILE"
+                nudge
+            fi
+        fi
+    done
+) &
+READER_PID=$!
+
+date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
+
+# Main Event Loop
+while [ "$RUNNING" -eq 1 ]; do
+    UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
+    if [ -z "$UDEVMONPID" ]; then
+        remaps
+        set-touchpad
+
+        (
+            udevadm monitor -u -t seat -s input -s usb | grep -qP -m1 -e '.+\/input'
+            milis=$( shuf -i 500-900 -n 1)
+            sleep "0.${milis}"
+            nudge
+        ) &
+    fi
+
+    # Safe block synchronization check
+    wait "$READER_PID" 2>/dev/null
+done
