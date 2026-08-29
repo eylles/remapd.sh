@@ -12,12 +12,36 @@ RUNNING=1
 # CONFIG #
 ##########
 
+# location for demon named pipe and queue files
+# default: /tmp
+RUN_FILES_LOC="/tmp"
+
 # named pipe
-# default: /tmp/udev_daemon.fifo
-FIFO_PIPE="/tmp/udev_daemon.fifo"
+# default: ${RUN_FILES_LOC}/udev_daemon.fifo
+FIFO_PIPE="${RUN_FILES_LOC}/udev_daemon.fifo"
 # queue file
-# default: /tmp/udev_daemon.queue
-QUEUE_FILE="/tmp/udev_daemon.queue"
+# default: ${RUN_FILES_LOC}/udev_daemon.queue
+QUEUE_FILE="${RUN_FILES_LOC}/udev_daemon.queue"
+
+conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
+
+#config file
+config_file="${conf_dir}/remapd.rc"
+
+if [ -r "$config_file" ]; then
+    . "$config_file"
+else
+    if [ ! -d "$conf_dir" ]; then
+        mkdir -p "$conf_dir"
+    fi
+    cat << __HEREDOC__ > "$config_file"
+# vim: ft=sh
+# remapd config file
+
+# default location for pipe and queue files
+RUN_FILES_LOC="$RUN_FILES_LOC"
+__HEREDOC__
+fi
 
 ############
 # RUN VARS #
