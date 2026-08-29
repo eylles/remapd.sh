@@ -1,11 +1,29 @@
 #!/bin/sh
 
-MAIN_PID="$$"
+#############
+# CONSTANTS #
+#############
 
-# Configuration
-FIFO_PIPE="/tmp/udev_daemon.fifo"
-QUEUE_FILE="/tmp/udev_daemon.queue"
+# main daemon pid
+MAIN_PID="$$"
 RUNNING=1
+
+##########
+# CONFIG #
+##########
+
+# named pipe
+# default: /tmp/udev_daemon.fifo
+FIFO_PIPE="/tmp/udev_daemon.fifo"
+# queue file
+# default: /tmp/udev_daemon.queue
+QUEUE_FILE="/tmp/udev_daemon.queue"
+
+############
+# RUN VARS #
+############
+
+# pid of running udevmon instance
 UDEVMONPID=""
 
 is_int() {
