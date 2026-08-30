@@ -18,7 +18,7 @@ RUN_FILES_LOC="/tmp"
 
 # named pipe
 # default: ${RUN_FILES_LOC}/udev_daemon.fifo
-FIFO_PIPE="${RUN_FILES_LOC}/udev_daemon.fifo"
+PIPE_FILE="${RUN_FILES_LOC}/udev_daemon.fifo"
 # queue file
 # default: ${RUN_FILES_LOC}/udev_daemon.queue
 QUEUE_FILE="${RUN_FILES_LOC}/udev_daemon.queue"
@@ -94,7 +94,7 @@ cleanup() {
     fi
 
     # Clean IPC assets
-    rm -f "$FIFO_PIPE" "$QUEUE_FILE"
+    rm -f "$PIPE_FILE" "$QUEUE_FILE"
     if [ -n "$READER_PID" ]; then
         kill "$READER_PID" 2>/dev/null
         echo "[remapd]: reader '$READER_PID' killed"
@@ -139,14 +139,14 @@ trap ipc_handler USR1
 trap cleanup EXIT
 
 # initialize named pipe
-rm -f "$FIFO_PIPE" "$QUEUE_FILE"
-mkfifo -m 600 "$FIFO_PIPE"
+rm -f "$PIPE_FILE" "$QUEUE_FILE"
+mkfifo -m 600 "$PIPE_FILE"
 touch "$QUEUE_FILE"
 
 # Background Reader
 (
     while true; do
-        if read -r line < "$FIFO_PIPE"; then
+        if read -r line < "$PIPE_FILE"; then
             if [ -n "$line" ]; then
                 printf "%s\n" "$line" >> "$QUEUE_FILE"
                 nudge
