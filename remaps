@@ -1,28 +1,33 @@
 #!/bin/sh
 
-layouts="latam,ru(phonetic),gr"
-# echo "[remaps]: setting layouts: '$layouts'"
+# This script is called on startup to remap keys and Increase key speed via a rate change
+
+# keyboard layouts to use
+layouts="us"
+
+# set repeat delay
+# this controls ms before repetition
+repeat_delay=300
+# set key repeat per second
+# this controls the repetitions per second
+repeats_second=60
+
 # set keyboard layouts
 setxkbmap -layout "$layouts" 2>/dev/null
-
-# This script is called on startup to remap keys.
-# Increase key speed via a rate change
-# first number is the ms before repetition
-# second number is the repetitions per second
-# set repeat delay
-# set key repeat per second
-repeat_delay=300
-repeats_second=60
-# echo "[remaps]: setting repeat rate '$repeats_second' auto repeat delay '$repeat_delay'ms"
+# set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"
 xset r rate "$repeat_delay" "$repeats_second" 2>/dev/null
 # Map the caps lock key to super...
 setxkbmap -option "caps:super" 2>/dev/null
+shift_R=62
 # Map shift_R as hyper_r
-xmodmap -e 'keycode 62 = Hyper_R' 2>/dev/null
+xmodmap -e "keycode $shift_R = Hyper_R" 2>/dev/null
 # Add shift function to hyper
 xmodmap -e 'add Shift = Hyper_R' 2>/dev/null
+unused_kc=184
 # Map caps to an unused keycode according to xmodmap -pke | less
-xmodmap -e 'keycode 184 = Caps_Lock' 2>/dev/null
+xmodmap -e "keycode $unused_kc = Caps_Lock" 2>/dev/null
+# miliseconds a key needs to be pressed before being treated as held
+press_ms=150
 # When caps lock is pressed only once, treat it as escape.
 # When Shift_R is pressed only once, treat it as caps
-killall xcape 2>/dev/null ; xcape -t 150 -e 'Super_L=Escape;Hyper_R=Caps_Lock' 2>/dev/null
+killall xcape 2>/dev/null ; xcape -t "$press_ms" -e 'Super_L=Escape;Hyper_R=Caps_Lock' 2>/dev/null
