@@ -17,11 +17,11 @@ RUNNING=1
 RUN_FILES_LOC="/tmp"
 
 # named pipe
-# default: ${RUN_FILES_LOC}/udev_daemon.fifo
-PIPE_FILE="${RUN_FILES_LOC}/udev_daemon.fifo"
+# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo
+PIPE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo"
 # queue file
-# default: ${RUN_FILES_LOC}/udev_daemon.queue
-QUEUE_FILE="${RUN_FILES_LOC}/udev_daemon.queue"
+# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue
+QUEUE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue"
 
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
