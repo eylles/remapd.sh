@@ -2,7 +2,55 @@
 
 myname="${0##*/}"
 
-always_output="1"
+###########
+# configs #
+###########
+
+# enable tapping
+tapping=1
+
+# enable natural scrolling
+natscrol=1
+
+# acceleration
+accel="-0.050000"
+
+# touchpad transformation matrix
+sensitivity_matrix="1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000"
+
+# always produce output regardless of script being ran from the daemon or a terminal
+always_output=""
+
+conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
+
+#config file
+config_file="${conf_dir}/touchpad.rc"
+
+if [ -r "$config_file" ]; then
+    . "$config_file"
+else
+    if [ ! -d "$conf_dir" ]; then
+        mkdir -p "$conf_dir"
+    fi
+    cat << __HEREDOC__ > "$config_file"
+# vim: ft=sh
+# set touchpad config file
+
+# enable tapping
+tapping="$tapping"
+
+# enable natural scrolling
+natscrol="$natscrol"
+
+# acceleration
+accel="$accel"
+
+# touchpad transformation matrix
+sensitivity_matrix="$sensitivity_matrix"
+
+always_output="$always_output"
+__HEREDOC__
+fi
 
 msgp () {
     type="$1"
@@ -43,21 +91,6 @@ dev_set_prop () {
         xinput set-prop "$dev_id" "$prop" $value
     fi
 }
-
-###########
-# configs #
-###########
-
-# enable tapping
-tapping=1
-
-# enable natural scrolling
-natscrol=1
-
-# acceleration
-accel="-0.050000"
-# touchpad transformation matrix
-sensitivity_matrix="1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000"
 
 for touchpad in $(get_touchpads) ; do
     touchpad=$(printf '%s' "$touchpad" | sed 's/_/ /g')
