@@ -2,6 +2,9 @@
 
 # This script is called on startup to remap keys and Increase key speed via a rate change
 
+# keyboard model to use
+model="pc105"
+
 # keyboard layouts to use
 layouts="us"
 
@@ -30,6 +33,10 @@ else
 # vim: ft=sh
 # remaps config file
 
+# keyboard model to use
+# the 'pc105' is the default model for standar keyboards
+model="$model"
+
 # keyboard layouts to use
 layouts="$layouts"
 
@@ -47,7 +54,7 @@ __HEREDOC__
 fi
 
 # set keyboard layouts
-setxkbmap -layout "$layouts" 2>/dev/null
+setxkbmap -model "$model" -layout "$layouts" 2>/dev/null
 # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"
 xset r rate "$repeat_delay" "$repeats_second" 2>/dev/null
 # Map the caps lock key to super...
