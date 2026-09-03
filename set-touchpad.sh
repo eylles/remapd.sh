@@ -71,7 +71,7 @@ msgp () {
 }
 
 get_touchpads () {
-    xinput | awk 'match($0, /**Touchpad/){ gsub(/⎜   ↳ /,"",$0)gsub(/ /,"_",$0)gsub(/__/,"",$0)gsub(/**id=/,"",$0); print $1"::"$2 }'
+    xinput | awk 'match($0, /**Touchpad/){ gsub(/⎜   ↳ /,"",$0)gsub(/ /,"_",$0)gsub(/__/,"",$0)gsub(/_Touchpad/,"",$0)gsub(/**id=/,"",$0); print $1"::"$2 }'
 }
 
 get_dev_prop () {
