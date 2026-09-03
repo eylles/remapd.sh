@@ -158,17 +158,43 @@ READER_PID=$!
 
 date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
 
+# run tweak scripts immediately
+remaps
+set-touchpad
 # Main Event Loop
 while [ "$RUNNING" -eq 1 ]; do
     UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
     if [ -z "$UDEVMONPID" ]; then
-        remaps
-        set-touchpad
-
         (
-            udevadm monitor -u -t seat -s input -s usb | grep -qP -m1 -e '.+\/input'
-            milis=$( shuf -i 500-900 -n 1)
+            # Monitor environment blocks and parse in real-time using a shell loop
+            udevadm monitor --environment --subsystem=input | {
+                is_add=0; is_kbd=0; is_pad=0
+                
+                while read -r line; do
+                    case "$line" in
+                        ACTION=add)          is_add=1 ;;
+                        ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
+                        ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
+                        "") 
+                            # An empty line signals the end of a hardware uevent block
+                            if [ "$is_add" -eq 1 ]; then
+                                if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
+                                if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
+                                # If we caught a relevant device, break the read loop
+                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ]; then
+                                    break
+                                fi
+                            fi
+                            # Reset flags for the next block if this one didn't match
+                            is_add=0; is_kbd=0; is_pad=0
+                            ;;
+                    esac
+                done
+            } >> "$QUEUE_FILE"
+            # debounce spikes
+            milis=$( shuf -i 400-700 -n 1)
             sleep "0.${milis}"
+            # Signal the main daemon to flush the queue
             nudge
         ) &
     fi
