@@ -54,7 +54,7 @@ __HEREDOC__
 fi
 
 # set keyboard layouts
-setxkbmap -model "$model" -layout "$layouts" 2>/dev/null
+setxkbmap -model "$model" -layout "$layouts" -option "" 2>/dev/null
 # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"
 xset r rate "$repeat_delay" "$repeats_second" 2>/dev/null
 # Map the caps lock key to super...
