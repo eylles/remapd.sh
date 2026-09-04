@@ -53,6 +53,7 @@ press_ms="$press_ms"
 __HEREDOC__
 fi
 
+date "+[remaps]: applying keyboard remaps on %d-%m-%Y %H:%M:%S"
 # set keyboard layouts
 setxkbmap -model "$model" -layout "$layouts" -option "" 2>/dev/null
 # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"

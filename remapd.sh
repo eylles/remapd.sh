@@ -112,6 +112,7 @@ sig_handler() {
 
 ipc_handler() {
     if [ -s "$QUEUE_FILE" ]; then
+        date "+[remapd]: instance $MAIN_PID processing $QUEUE_FILE on %d-%m-%Y %H:%M:%S"
         mv "$QUEUE_FILE" "$QUEUE_FILE.work"
         touch "$QUEUE_FILE"
         

@@ -92,6 +92,7 @@ dev_set_prop () {
     fi
 }
 
+date "+[set-touchpad]: applying touchpad settings on %d-%m-%Y %H:%M:%S"
 for touchpad in $(get_touchpads) ; do
     touchpad=$(printf '%s' "$touchpad" | sed 's/_/ /g')
     touchpad_id="${touchpad##*::}"
