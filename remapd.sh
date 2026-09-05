@@ -121,6 +121,7 @@ ipc_handler() {
             case "$ACTION" in
                 "status")        printf "Daemon is running.\n" ;;
                 "remap")         remaps ;;
+                "gamepad")       set-gamepad ;;
                 "set-touchpad")  set-touchpad ;;
                 "stop")          RUNNING=0 ;;
             esac
@@ -176,13 +177,15 @@ while [ "$RUNNING" -eq 1 ]; do
                         ACTION=add)          is_add=1 ;;
                         ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
                         ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
+                        ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
                         "") 
                             # An empty line signals the end of a hardware uevent block
                             if [ "$is_add" -eq 1 ]; then
                                 if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
                                 if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
+                                if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
                                 # If we caught a relevant device, break the read loop
-                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ]; then
+                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" ]; then
                                     break
                                 fi
                             fi

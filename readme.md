@@ -11,6 +11,7 @@ This includes
 | `remapd` | hub daemon that leverages udevadm to run the other scripts when input devices are connected |
 | `remaps` | script to add keyboard remaps, it changes CapsLock to work as ESC when tapped but as Super when held, right Shift acts as CapsLock when tapped |
 | `set-touchpad` | set tapping, natural scrolling, acceleration and transformation matrix for ever connected touchpad |
+| `set-gamepad` | set lightbar options for sony dualsense controllers, can be extended with shell script from config |
 
 
 # install
