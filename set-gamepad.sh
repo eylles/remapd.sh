@@ -59,6 +59,7 @@ for_every_dualsense () {
     done
 }
 
+date "+[set-gamepad]: applying gamepad settings on %d-%m-%Y %H:%M:%S"
 if command -v dualsensectl >/dev/null; then
     for_every_dualsense
 fi
