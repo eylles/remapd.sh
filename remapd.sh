@@ -170,8 +170,7 @@ while [ "$RUNNING" -eq 1 ]; do
         (
             # Monitor environment blocks and parse in real-time using a shell loop
             udevadm monitor --environment --subsystem=input | {
-                is_add=0; is_kbd=0; is_pad=0
-                
+                is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
                 while read -r line; do
                     case "$line" in
                         ACTION=add)          is_add=1 ;;
@@ -185,12 +184,12 @@ while [ "$RUNNING" -eq 1 ]; do
                                 if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
                                 if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
                                 # If we caught a relevant device, break the read loop
-                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" ]; then
+                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
                                     break
                                 fi
                             fi
                             # Reset flags for the next block if this one didn't match
-                            is_add=0; is_kbd=0; is_pad=0
+                            is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
                             ;;
                     esac
                 done
