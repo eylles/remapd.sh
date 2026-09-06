@@ -180,11 +180,16 @@ while [ "$RUNNING" -eq 1 ]; do
                         "") 
                             # An empty line signals the end of a hardware uevent block
                             if [ "$is_add" -eq 1 ]; then
-                                if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
-                                if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
-                                if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
-                                # If we caught a relevant device, break the read loop
                                 if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
+
+                                    # debounce spikes
+                                    milis=$(shuf -i 300-700 -n 1)
+                                    sleep "0.${milis}"
+
+                                    if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
+                                    if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
+                                    if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
+
                                     break
                                 fi
                             fi
@@ -193,12 +198,7 @@ while [ "$RUNNING" -eq 1 ]; do
                             ;;
                     esac
                 done
-            } >> "$QUEUE_FILE"
-            # debounce spikes
-            milis=$( shuf -i 400-700 -n 1)
-            sleep "0.${milis}"
-            # Signal the main daemon to flush the queue
-            nudge
+            } >> "$PIPE_FILE"
         ) &
     fi
 
