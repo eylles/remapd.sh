@@ -61,5 +61,8 @@ for_every_dualsense () {
 
 date "+[set-gamepad]: applying gamepad settings on %d-%m-%Y %H:%M:%S"
 if command -v dualsensectl >/dev/null; then
+    milis=$(shuf -i 150-450 -n 1)
+    # Give /dev/hidraw creation a split second to finish mounting
+    sleep "0.${milis}"
     for_every_dualsense
 fi
