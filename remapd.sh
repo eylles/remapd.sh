@@ -113,7 +113,9 @@ sig_handler() {
 ipc_handler() {
     if [ -s "$QUEUE_FILE" ]; then
         date "+[remapd]: instance $MAIN_PID processing $QUEUE_FILE on %d-%m-%Y %H:%M:%S"
-        mv "$QUEUE_FILE" "$QUEUE_FILE.work"
+        timestamp=$(date '+%s%3N')
+        WORK_FILE="$QUEUE_FILE.${timestamp}.work"
+        mv "$QUEUE_FILE" "$WORK_FILE"
         touch "$QUEUE_FILE"
         
         while read -r ACTION; do
@@ -125,8 +127,8 @@ ipc_handler() {
                 "set-touchpad")  set-touchpad ;;
                 "stop")          RUNNING=0 ;;
             esac
-        done < "$QUEUE_FILE.work"
-        rm -f "$QUEUE_FILE.work"
+        done < "$WORK_FILE"
+        rm -f "$WORK_FILE"
     fi
 }
 
