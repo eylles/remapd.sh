@@ -65,4 +65,5 @@ if command -v dualsensectl >/dev/null; then
     # Give /dev/hidraw creation a split second to finish mounting
     sleep "0.${milis}"
     for_every_dualsense
+    set-touchpad
 fi
