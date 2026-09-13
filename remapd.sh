@@ -123,7 +123,7 @@ ipc_handler() {
                 "status")        printf "Daemon is running.\n" ;;
                 "remap")         remaps ;;
                 "gamepad")       set-gamepad ;;
-                "set-touchpad")  set-touchpad ;;
+                "touchpad")      set-touchpad ;;
                 "stop")          RUNNING=0 ;;
             esac
         done < "$WORK_FILE"
@@ -172,7 +172,7 @@ main() {
                                         sleep "0.${milis}"
 
                                         if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
-                                        if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
+                                        if [ "$is_pad" -eq 1 ]; then echo "touchpad"; fi
                                         if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
 
                                         break
