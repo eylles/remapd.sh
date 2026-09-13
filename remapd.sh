@@ -168,45 +168,49 @@ date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
 # run tweak scripts immediately
 remaps
 set-touchpad
-# Main Event Loop
-while [ "$RUNNING" -eq 1 ]; do
-    UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
-    if [ -z "$UDEVMONPID" ]; then
-        (
-            # Monitor environment blocks and parse in real-time using a shell loop
-            udevadm monitor --environment --subsystem=input | {
-                is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
-                while read -r line; do
-                    case "$line" in
-                        ACTION=add)          is_add=1 ;;
-                        ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
-                        ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
-                        ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
-                        "") 
-                            # An empty line signals the end of a hardware uevent block
-                            if [ "$is_add" -eq 1 ]; then
-                                if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
 
-                                    # debounce spikes
-                                    milis=$(shuf -i 300-700 -n 1)
-                                    sleep "0.${milis}"
+main() {
+    while [ "$RUNNING" -eq 1 ]; do
+        UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
+        if [ -z "$UDEVMONPID" ]; then
+            (
+                # Monitor environment blocks and parse in real-time using a shell loop
+                udevadm monitor --environment --subsystem=input | {
+                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
+                    while read -r line; do
+                        case "$line" in
+                            ACTION=add)          is_add=1 ;;
+                            ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
+                            ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
+                            ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
+                            "") 
+                                # An empty line signals the end of a hardware uevent block
+                                if [ "$is_add" -eq 1 ]; then
+                                    if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
 
-                                    if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
-                                    if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
-                                    if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
+                                        # debounce spikes
+                                        milis=$(shuf -i 300-700 -n 1)
+                                        sleep "0.${milis}"
 
-                                    break
+                                        if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
+                                        if [ "$is_pad" -eq 1 ]; then echo "set-touchpad"; fi
+                                        if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
+
+                                        break
+                                    fi
                                 fi
-                            fi
-                            # Reset flags for the next block if this one didn't match
-                            is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
-                            ;;
-                    esac
-                done
-            } >> "$PIPE_FILE"
-        ) &
-    fi
+                                # Reset flags for the next block if this one didn't match
+                                is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
+                                ;;
+                        esac
+                    done
+                } >> "$PIPE_FILE"
+            ) &
+        fi
 
-    # Safe block synchronization check
-    wait "$READER_PID" 2>/dev/null
-done
+        # Safe block synchronization check
+        wait "$READER_PID" 2>/dev/null
+    done
+}
+
+main
