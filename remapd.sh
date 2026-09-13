@@ -120,7 +120,7 @@ ipc_handler() {
         while read -r ACTION; do
             [ -z "$ACTION" ] && continue
             case "$ACTION" in
-                "status")        printf "Daemon is running.\n" ;;
+                "status")        date "+[remapd]: Daemon is running %d-%m-%Y %H:%M:%S" ;;
                 "remap")         remaps ;;
                 "gamepad")       set-gamepad ;;
                 "touchpad")      set-touchpad ;;
