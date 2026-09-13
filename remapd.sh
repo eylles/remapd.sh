@@ -98,10 +98,6 @@ cleanup() {
 
     # Clean IPC assets
     rm -f "$PIPE_FILE" "$QUEUE_FILE"
-    if [ -n "$READER_PID" ]; then
-        kill "$READER_PID" 2>/dev/null
-        echo "[remapd]: reader '$READER_PID' killed"
-    fi
     exit 0
 }
 
@@ -139,37 +135,20 @@ nudge() {
     kill -USR1 "$MAIN_PID" 2>/dev/null
 }
 
-# assign traps
-trap sig_handler INT TERM
-trap sig_ignore HUP CONT USR2
-trap ipc_handler USR1
-trap cleanup EXIT
-
-# initialize named pipe
-rm -f "$PIPE_FILE" "$QUEUE_FILE"
-mkfifo -m 600 "$PIPE_FILE"
-touch "$QUEUE_FILE"
-
-# Background Reader
-(
-    while true; do
-        if read -r line < "$PIPE_FILE"; then
-            if [ -n "$line" ]; then
-                printf "%s\n" "$line" >> "$QUEUE_FILE"
-                nudge
-            fi
-        fi
-    done
-) &
-READER_PID=$!
-
-date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
-
-# run tweak scripts immediately
-remaps
-set-touchpad
-
 main() {
+    # Background Reader
+    (
+        while true; do
+            if read -r line < "$PIPE_FILE"; then
+                if [ -n "$line" ]; then
+                    printf "%s\n" "$line" >> "$QUEUE_FILE"
+                    nudge
+                fi
+            fi
+        done
+    ) &
+    READER_PID=$!
+    # event loop
     while [ "$RUNNING" -eq 1 ]; do
         UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
@@ -211,6 +190,27 @@ main() {
         # Safe block synchronization check
         wait "$READER_PID" 2>/dev/null
     done
+    if kill -0 "$READER_PID" 2>/dev/null; then
+        kill "$READER_PID" 2>/dev/null
+        echo "[remapd]: reader '$READER_PID' killed"
+    fi
 }
+
+# assign traps
+trap sig_handler INT TERM
+trap sig_ignore HUP CONT USR2
+trap ipc_handler USR1
+trap cleanup EXIT
+
+# initialize named pipe
+rm -f "$PIPE_FILE" "$QUEUE_FILE"
+mkfifo -m 600 "$PIPE_FILE"
+touch "$QUEUE_FILE"
+
+date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
+
+# run tweak scripts immediately
+remaps
+set-touchpad
 
 main
