@@ -186,11 +186,19 @@ main() {
                         esac
                     done
                 } >> "$PIPE_FILE"
+                if pid_tree_search "$MAIN_PID" "udevadm" >/dev/null; then
+                    udevmonpid=$(pid_tree_search "$MAIN_PID" "udevadm")
+                    if [ -n "$udevmonpid" ]; then
+                        kill "$udevmonpid"
+                        udevmonpid=""
+                    fi 
+                fi
             ) &
         fi
 
         # Safe block synchronization check
         wait "$READER_PID" 2>/dev/null
+        UDEVMONPID=""
     done
     if kill -0 "$READER_PID" 2>/dev/null; then
         kill "$READER_PID" 2>/dev/null
