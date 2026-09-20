@@ -109,15 +109,19 @@ pid_tree_search () {
     fi
 }
 
-cleanup() {
-    # Stop background udev monitoring if active
+clean_udevadm_instances() {
     while pid_tree_search "$MAIN_PID" "udevadm" >/dev/null; do
-        UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
-        if [ -n "$UDEVMONPID" ] && kill -0 "$UDEVMONPID" 2>/dev/null; then
-            kill "$UDEVMONPID" 2>/dev/null
-            echo "[remapd]: udevadm '$UDEVMONPID' killed"
+        udevmon_pid=$(pid_tree_search "$MAIN_PID" "udevadm")
+        if [ -n "$udevmon_pid" ] && kill -0 "$udevmon_pid" 2>/dev/null; then
+            kill "$udevmon_pid" 2>/dev/null
+            echo "[remapd]: udevadm instance '$udevmon_pid' killed"
         fi
     done
+}
+
+cleanup() {
+    # Stop background udev monitoring if active
+    clean_udevadm_instances
 
     # Clean IPC assets
     rm -f "$PIPE_FILE" "$QUEUE_FILE"
