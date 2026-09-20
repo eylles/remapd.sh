@@ -211,13 +211,7 @@ main() {
                         esac
                     done
                 } >> "$PIPE_FILE"
-                if pid_tree_search "$MAIN_PID" "udevadm" >/dev/null; then
-                    udevmonpid=$(pid_tree_search "$MAIN_PID" "udevadm")
-                    if [ -n "$udevmonpid" ]; then
-                        kill "$udevmonpid"
-                        udevmonpid=""
-                    fi 
-                fi
+                clean_udevadm_instances
             ) &
         fi
 
