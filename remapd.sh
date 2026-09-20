@@ -50,11 +50,24 @@ fi
 # pid of running udevmon instance
 UDEVMONPID=""
 
+# unix command line compatible booleans
+
+# Type: int
+# value: 0
+_true=0
+# Type: int
+# value: 1
+_false=1
+
+
+# usage: is_int "value"
+# description: check if passed value is an integer
+# return type: retval int boolean
 is_int() {
     if [ -n "$1" ]; then
         printf %d "$1" >/dev/null 2>&1
     else
-        return 1
+        return "$_false"
     fi
 }
 
@@ -66,6 +79,12 @@ if command -v busybox >/dev/null; then
     u_awk () { busybox awk "$@"; }
 fi
 
+# usage: pid_tree_search PID NAME
+#          PID: the parent pid among whose ps tree we will search
+#         NAME: the name of the program whose pid we want
+#       return: pid of NAME program
+#  return type: stdout integer
+# return error: retval _false
 pid_tree_search () {
     search_pid="$1"
     search_name="$2"
@@ -86,7 +105,7 @@ pid_tree_search () {
     if is_int "$rval"; then
         printf '%s\n' "$rval"
     else
-        return 1
+        return "$_false"
     fi
 }
 
