@@ -85,6 +85,8 @@ pid_tree_search () {
         )
     if is_int "$rval"; then
         printf '%s\n' "$rval"
+    else
+        return 1
     fi
 }
 
