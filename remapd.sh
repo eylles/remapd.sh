@@ -109,12 +109,16 @@ pid_tree_search () {
     fi
 }
 
+msg() {
+    date "+[%d-%m-%Y %H:%M:%S] remapd $MAIN_PID: $*"
+}
+
 clean_udevadm_instances() {
     while pid_tree_search "$MAIN_PID" "udevadm" >/dev/null; do
         udevmon_pid=$(pid_tree_search "$MAIN_PID" "udevadm")
         if [ -n "$udevmon_pid" ] && kill -0 "$udevmon_pid" 2>/dev/null; then
             kill "$udevmon_pid" 2>/dev/null
-            echo "[remapd]: udevadm instance '$udevmon_pid' killed"
+            echo "udevadm instance '$udevmon_pid' killed"
         fi
     done
 }
