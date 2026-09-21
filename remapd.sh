@@ -118,7 +118,7 @@ clean_udevadm_instances() {
         udevmon_pid=$(pid_tree_search "$MAIN_PID" "udevadm")
         if [ -n "$udevmon_pid" ] && kill -0 "$udevmon_pid" 2>/dev/null; then
             kill "$udevmon_pid" 2>/dev/null
-            echo "udevadm instance '$udevmon_pid' killed"
+            msg "udevadm instance '$udevmon_pid' killed"
         fi
     done
 }
@@ -142,7 +142,7 @@ sig_handler() {
 
 ipc_handler() {
     if [ -s "$QUEUE_FILE" ]; then
-        date "+[remapd]: instance $MAIN_PID processing $QUEUE_FILE on %d-%m-%Y %H:%M:%S"
+        msg "processing $QUEUE_FILE"
         timestamp=$(date '+%s%3N')
         WORK_FILE="$QUEUE_FILE.${timestamp}.work"
         mv "$QUEUE_FILE" "$WORK_FILE"
@@ -151,7 +151,7 @@ ipc_handler() {
         while read -r ACTION; do
             [ -z "$ACTION" ] && continue
             case "$ACTION" in
-                "status")        date "+[remapd]: Daemon is running %d-%m-%Y %H:%M:%S" ;;
+                "status")        msg "Daemon is running" ;;
                 "remap")         remaps ;;
                 "gamepad")       set-gamepad ;;
                 "touchpad")      set-touchpad ;;
@@ -184,7 +184,7 @@ main() {
         UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
             (
-                date "+[remapd]: starting udevadm instance %d-%m-%Y %H:%M:%S"
+                msg "starting udevadm instance"
                 # Monitor environment blocks and parse in real-time using a shell loop
                 udevadm monitor --environment --subsystem=input | {
                     is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
@@ -226,7 +226,7 @@ main() {
     done
     if kill -0 "$READER_PID" 2>/dev/null; then
         kill "$READER_PID" 2>/dev/null
-        echo "[remapd]: reader '$READER_PID' killed"
+        msg "reader '$READER_PID' killed"
     fi
 }
 
@@ -241,7 +241,7 @@ rm -f "$PIPE_FILE" "$QUEUE_FILE"
 mkfifo -m 600 "$PIPE_FILE"
 touch "$QUEUE_FILE"
 
-date "+[remapd]: Daemon started %d-%m-%Y %H:%M:%S with PID: $MAIN_PID"
+msg "Daemon started"
 
 # run tweak scripts immediately
 remaps
