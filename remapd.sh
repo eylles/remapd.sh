@@ -180,6 +180,7 @@ main() {
         UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
             (
+                date "+[remapd]: starting udevadm instance %d-%m-%Y %H:%M:%S"
                 # Monitor environment blocks and parse in real-time using a shell loop
                 udevadm monitor --environment --subsystem=input | {
                     is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
