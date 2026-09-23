@@ -1,13 +1,5 @@
 #!/bin/sh
 
-#############
-# CONSTANTS #
-#############
-
-# main daemon pid
-MAIN_PID="$$"
-RUNNING=1
-
 ##########
 # CONFIG #
 ##########
@@ -15,13 +7,6 @@ RUNNING=1
 # location for demon named pipe and queue files
 # default: /tmp
 RUN_FILES_LOC="/tmp"
-
-# named pipe
-# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo
-PIPE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo"
-# queue file
-# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue
-QUEUE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue"
 
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
@@ -43,9 +28,25 @@ RUN_FILES_LOC="$RUN_FILES_LOC"
 __HEREDOC__
 fi
 
+#############
+# CONSTANTS #
+#############
+
+# main daemon pid
+MAIN_PID="$$"
+RUNNING=1
+myname="${0##*/}"
+
 ############
 # RUN VARS #
 ############
+
+# named pipe
+# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo
+PIPE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo"
+# queue file
+# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue
+QUEUE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue"
 
 # pid of running udevmon instance
 UDEVMONPID=""
