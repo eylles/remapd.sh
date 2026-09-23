@@ -33,7 +33,7 @@ fi
 #############
 
 # main daemon pid
-MAIN_PID="$$"
+mypid="$$"
 RUNNING=1
 myname="${0##*/}"
 
@@ -42,11 +42,11 @@ myname="${0##*/}"
 ############
 
 # named pipe
-# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo
-PIPE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.fifo"
+# default: ${RUN_FILES_LOC}/remapd_${mypid}.fifo
+PIPE_FILE="${RUN_FILES_LOC}/remapd_${mypid}.fifo"
 # queue file
-# default: ${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue
-QUEUE_FILE="${RUN_FILES_LOC}/remapd_${MAIN_PID}.queue"
+# default: ${RUN_FILES_LOC}/remapd_${mypid}.queue
+QUEUE_FILE="${RUN_FILES_LOC}/remapd_${mypid}.queue"
 
 # pid of running udevmon instance
 UDEVMONPID=""
@@ -110,13 +110,31 @@ pid_tree_search () {
     fi
 }
 
+# type: int
+# description: digit width of the process id number
+# default: 6
+PIDWIDTH="6"
+if [ -r /proc/sys/kernel/pid_max ]; then
+        pidmax=$(cat /proc/sys/kernel/pid_max)
+        pw=${#pidmax}
+fi
+if [ -n "$pw" ]; then
+    PIDWIDTH="$pw"
+fi
+PIDWIDTH="$(( PIDWIDTH + 2 ))"
 msg() {
-    date "+[%d-%m-%Y %H:%M:%S] remapd $MAIN_PID: $*"
+    message="$*"
+    printf '[%s] %12s %*s: %s\n' \
+        "$(date +'%Y-%m-%d %H:%M:%S')" \
+        "$myname" \
+        "$PIDWIDTH" "$mypid" \
+        "$message"
+
 }
 
 clean_udevadm_instances() {
-    while pid_tree_search "$MAIN_PID" "udevadm" >/dev/null; do
-        udevmon_pid=$(pid_tree_search "$MAIN_PID" "udevadm")
+    while pid_tree_search "$mypid" "udevadm" >/dev/null; do
+        udevmon_pid=$(pid_tree_search "$mypid" "udevadm")
         if [ -n "$udevmon_pid" ] && kill -0 "$udevmon_pid" 2>/dev/null; then
             kill "$udevmon_pid" 2>/dev/null
             msg "udevadm instance '$udevmon_pid' killed"
@@ -164,7 +182,7 @@ ipc_handler() {
 }
 
 nudge() {
-    kill -USR1 "$MAIN_PID" 2>/dev/null
+    kill -USR1 "$mypid" 2>/dev/null
 }
 
 main() {
@@ -182,7 +200,7 @@ main() {
     READER_PID=$!
     # event loop
     while [ "$RUNNING" -eq 1 ]; do
-        UDEVMONPID=$(pid_tree_search "$MAIN_PID" "udevadm")
+        UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
             (
                 msg "starting udevadm instance"
