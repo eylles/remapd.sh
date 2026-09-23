@@ -53,7 +53,31 @@ press_ms="$press_ms"
 __HEREDOC__
 fi
 
-date "+[remaps]: applying keyboard remaps on %d-%m-%Y %H:%M:%S"
+myname="${0##*/}"
+mypid="$$"
+# type: int
+# description: digit width of the process id number
+# default: 6
+PIDWIDTH="6"
+if [ -r /proc/sys/kernel/pid_max ]; then
+        pidmax=$(cat /proc/sys/kernel/pid_max)
+        pw=${#pidmax}
+fi
+if [ -n "$pw" ]; then
+    PIDWIDTH="$pw"
+fi
+PIDWIDTH="$(( PIDWIDTH + 2 ))"
+msg() {
+    message="$*"
+    printf '[%s] %12s %*s: %s\n' \
+        "$(date +'%Y-%m-%d %H:%M:%S')" \
+        "$myname" \
+        "$PIDWIDTH" "$mypid" \
+        "$message"
+
+}
+
+msg "applying keyboard remaps"
 # set keyboard layouts
 setxkbmap -model "$model" -layout "$layouts" -option "" 2>/dev/null
 # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"

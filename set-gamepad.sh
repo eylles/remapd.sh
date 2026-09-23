@@ -49,6 +49,30 @@ led_b=$led_b
 __HEREDOC__
 fi
 
+myname="${0##*/}"
+mypid="$$"
+# type: int
+# description: digit width of the process id number
+# default: 6
+PIDWIDTH="6"
+if [ -r /proc/sys/kernel/pid_max ]; then
+        pidmax=$(cat /proc/sys/kernel/pid_max)
+        pw=${#pidmax}
+fi
+if [ -n "$pw" ]; then
+    PIDWIDTH="$pw"
+fi
+PIDWIDTH="$(( PIDWIDTH + 2 ))"
+msg() {
+    message="$*"
+    printf '[%s] %12s %*s: %s\n' \
+        "$(date +'%Y-%m-%d %H:%M:%S')" \
+        "$myname" \
+        "$PIDWIDTH" "$mypid" \
+        "$message"
+
+}
+
 dualsense_controller_list () {
     dualsensectl -l | awk 'NR > 1 {print $1}'
 }
@@ -59,7 +83,7 @@ for_every_dualsense () {
     done
 }
 
-date "+[set-gamepad]: applying gamepad settings on %d-%m-%Y %H:%M:%S"
+msg "applying gamepad settings"
 if command -v dualsensectl >/dev/null; then
     milis=$(shuf -i 150-450 -n 1)
     # Give /dev/hidraw creation a split second to finish mounting

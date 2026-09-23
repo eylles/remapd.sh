@@ -1,7 +1,5 @@
 #!/bin/sh
 
-myname="${0##*/}"
-
 ###########
 # configs #
 ###########
@@ -52,6 +50,30 @@ always_output="$always_output"
 __HEREDOC__
 fi
 
+myname="${0##*/}"
+mypid="$$"
+# type: int
+# description: digit width of the process id number
+# default: 6
+PIDWIDTH="6"
+if [ -r /proc/sys/kernel/pid_max ]; then
+        pidmax=$(cat /proc/sys/kernel/pid_max)
+        pw=${#pidmax}
+fi
+if [ -n "$pw" ]; then
+    PIDWIDTH="$pw"
+fi
+PIDWIDTH="$(( PIDWIDTH + 2 ))"
+msg() {
+    message="$*"
+    printf '[%s] %12s %*s: %s\n' \
+        "$(date +'%Y-%m-%d %H:%M:%S')" \
+        "$myname" \
+        "$PIDWIDTH" "$mypid" \
+        "$message"
+
+}
+
 msgp () {
     type="$1"
     shift
@@ -92,7 +114,7 @@ dev_set_prop () {
     fi
 }
 
-date "+[set-touchpad]: applying touchpad settings on %d-%m-%Y %H:%M:%S"
+msg "applying touchpad settings"
 for touchpad in $(get_touchpads) ; do
     touchpad=$(printf '%s' "$touchpad" | sed 's/_/ /g')
     touchpad_id="${touchpad##*::}"
