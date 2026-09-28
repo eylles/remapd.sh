@@ -256,6 +256,7 @@ trap ipc_handler USR1
 trap cleanup EXIT
 
 # initialize named pipe
+mkdir -p "$RUN_FILES_LOC"
 rm -f "$PIPE_FILE" "$QUEUE_FILE"
 mkfifo -m 600 "$PIPE_FILE"
 touch "$QUEUE_FILE"
