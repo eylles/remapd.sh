@@ -24,7 +24,7 @@ else
 # remapd config file
 
 # default location for pipe and queue files
-RUN_FILES_LOC="$RUN_FILES_LOC"
+RUN_FILES_LOC="\$XDG_RUNTIME_DIR/remapd"
 __HEREDOC__
 fi
 
