@@ -5,8 +5,8 @@
 ##########
 
 # location for demon named pipe and queue files
-# default: /tmp
-RUN_FILES_LOC="/tmp"
+# default: $XDG_RUNTIME_DIR/remapd
+RUN_FILES_LOC="$XDG_RUNTIME_DIR/remapd"
 
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
