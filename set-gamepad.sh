@@ -50,6 +50,7 @@ __HEREDOC__
 fi
 
 myname="${0##*/}"
+version="@VERSION@"
 mypid="$$"
 # type: int
 # description: digit width of the process id number
@@ -83,7 +84,7 @@ for_every_dualsense () {
     done
 }
 
-msg "applying gamepad settings"
+msg "applying gamepad settings version $version"
 if command -v dualsensectl >/dev/null; then
     milis=$(shuf -i 150-450 -n 1)
     # Give /dev/hidraw creation a split second to finish mounting

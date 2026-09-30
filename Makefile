@@ -17,15 +17,15 @@ remapd: build
 	chmod 755 build/$@
 
 remaps: build
-	cp -f remaps.sh build/$@
+	sed "s|@VERSION@|$(VERSION)|g" remaps.sh > build/$@
 	chmod 755 build/$@
 
 set-touchpad: build
-	cp -f set-touchpad.sh build/$@
+	sed "s|@VERSION@|$(VERSION)|g" set-touchpad.sh > build/$@
 	chmod 755 build/$@
 
 set-gamepad: build
-	cp -f set-gamepad.sh build/$@
+	sed "s|@VERSION@|$(VERSION)|g" set-gamepad.sh > build/$@
 	chmod 755 build/$@
 
 install: all

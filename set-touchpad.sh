@@ -51,6 +51,7 @@ __HEREDOC__
 fi
 
 myname="${0##*/}"
+version="@VERSION@"
 mypid="$$"
 # type: int
 # description: digit width of the process id number
@@ -114,7 +115,7 @@ dev_set_prop () {
     fi
 }
 
-msg "applying touchpad settings"
+msg "applying touchpad settings version $version"
 for touchpad in $(get_touchpads) ; do
     touchpad=$(printf '%s' "$touchpad" | sed 's/_/ /g')
     touchpad_id="${touchpad##*::}"

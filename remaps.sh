@@ -54,6 +54,7 @@ __HEREDOC__
 fi
 
 myname="${0##*/}"
+version="@VERSION@"
 mypid="$$"
 # type: int
 # description: digit width of the process id number
@@ -77,7 +78,7 @@ msg() {
 
 }
 
-msg "applying keyboard remaps"
+msg "applying keyboard remaps version $version"
 # set keyboard layouts
 setxkbmap -model "$model" -layout "$layouts" -option "" 2>/dev/null
 # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"
