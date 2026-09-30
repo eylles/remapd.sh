@@ -1,6 +1,7 @@
 .POSIX:
 
 include config.mk
+include version.mk
 
 .PHONY: all bin install uninstall clean
 
@@ -12,7 +13,7 @@ build:
 	mkdir build
 
 remapd: build
-	cp -f remapd.sh build/$@
+	sed "s|@VERSION@|$(VERSION)|g" remapd.sh > build/$@
 	chmod 755 build/$@
 
 remaps: build
