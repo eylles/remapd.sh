@@ -36,6 +36,7 @@ fi
 mypid="$$"
 RUNNING=1
 myname="${0##*/}"
+version="@VERSION@"
 
 ############
 # RUN VARS #
@@ -261,7 +262,7 @@ rm -f "$PIPE_FILE" "$QUEUE_FILE"
 mkfifo -m 600 "$PIPE_FILE"
 touch "$QUEUE_FILE"
 
-msg "Daemon started"
+msg "Daemon version $version started"
 
 # run tweak scripts immediately
 remaps
