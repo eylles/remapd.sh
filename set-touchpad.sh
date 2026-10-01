@@ -50,6 +50,10 @@ always_output="$always_output"
 __HEREDOC__
 fi
 
+#############
+# CONSTANTS #
+#############
+
 myname="${0##*/}"
 version="@VERSION@"
 mypid="$$"
@@ -65,6 +69,7 @@ if [ -n "$pw" ]; then
     PIDWIDTH="$pw"
 fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
+
 msg() {
     message="$*"
     printf '[%s] %12s %*s %s: %s\n' \
@@ -91,7 +96,7 @@ msgp () {
     if [ -n "$always_output" ] || tty | grep -qF  -e "dev/pts"; then
         printf '[%s] %s: %3s %s - %s: %s "%s"\n' \
             "${myname}" "$type" "$id" "$name" "$act" "$prop" "$val"
-    fi 
+    fi
 }
 
 get_touchpads () {

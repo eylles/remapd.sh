@@ -53,6 +53,10 @@ press_ms="$press_ms"
 __HEREDOC__
 fi
 
+#############
+# CONSTANTS #
+#############
+
 myname="${0##*/}"
 version="@VERSION@"
 mypid="$$"
@@ -68,6 +72,7 @@ if [ -n "$pw" ]; then
     PIDWIDTH="$pw"
 fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
+
 msg() {
     message="$*"
     printf '[%s] %12s %*s %s: %s\n' \

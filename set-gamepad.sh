@@ -30,7 +30,7 @@ else
 
 # the values below are used to set the controller
 # lightbar brightness and color, altho the script
-# only considers sony dualsense controllers and 
+# only considers sony dualsense controllers and
 # only sets the values if the 'dualsensectl' program
 # is present, you can set functions and more variables
 # in this file to consider and set other types of
@@ -49,6 +49,10 @@ led_b=$led_b
 __HEREDOC__
 fi
 
+#############
+# CONSTANTS #
+#############
+
 myname="${0##*/}"
 version="@VERSION@"
 mypid="$$"
@@ -64,6 +68,7 @@ if [ -n "$pw" ]; then
     PIDWIDTH="$pw"
 fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
+
 msg() {
     message="$*"
     printf '[%s] %12s %*s %s: %s\n' \
