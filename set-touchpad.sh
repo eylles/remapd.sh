@@ -82,8 +82,6 @@ msg() {
 }
 
 msgp () {
-    type="$1"
-    shift
     id="$1"
     shift
     name="$1"
@@ -95,7 +93,8 @@ msgp () {
     val="$*"
     if [ -n "$always_output" ] || tty | grep -qF  -e "dev/pts"; then
         printf '[%s] %s: %3s %s - %s: %s "%s"\n' \
-            "${myname}" "$type" "$id" "$name" "$act" "$prop" "$val"
+            "$(date +'%Y-%m-%d %H:%M:%S')" \
+            "${myname}" "$id" "$name" "$act" "$prop" "$val"
     fi
 }
 
@@ -116,7 +115,7 @@ dev_set_prop () {
     if [ "$value" != "$curr_val" ]; then
         # shellcheck disable=2086
         # we DO want word splitting for the values to be applied correctly
-        msgp "touchpad" "$dev_id" "$dev_name" "setting" "$prop" "$value"
+        msgp "$dev_id" "$dev_name" "setting" "$prop" "$value"
         xinput set-prop "$dev_id" "$prop" $value
     fi
 }
