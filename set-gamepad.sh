@@ -66,10 +66,11 @@ fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
 msg() {
     message="$*"
-    printf '[%s] %12s %*s: %s\n' \
+    printf '[%s] %12s %*s %s: %s\n' \
         "$(date +'%Y-%m-%d %H:%M:%S')" \
         "$myname" \
         "$PIDWIDTH" "$mypid" \
+        "$version" \
         "$message"
 
 }
@@ -84,7 +85,7 @@ for_every_dualsense () {
     done
 }
 
-msg "applying gamepad settings version $version"
+msg "applying gamepad settings"
 if command -v dualsensectl >/dev/null; then
     milis=$(shuf -i 150-450 -n 1)
     # Give /dev/hidraw creation a split second to finish mounting

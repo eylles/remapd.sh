@@ -67,10 +67,11 @@ fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
 msg() {
     message="$*"
-    printf '[%s] %12s %*s: %s\n' \
+    printf '[%s] %12s %*s %s: %s\n' \
         "$(date +'%Y-%m-%d %H:%M:%S')" \
         "$myname" \
         "$PIDWIDTH" "$mypid" \
+        "$version" \
         "$message"
 
 }
@@ -115,7 +116,7 @@ dev_set_prop () {
     fi
 }
 
-msg "applying touchpad settings version $version"
+msg "applying touchpad settings"
 for touchpad in $(get_touchpads) ; do
     touchpad=$(printf '%s' "$touchpad" | sed 's/_/ /g')
     touchpad_id="${touchpad##*::}"

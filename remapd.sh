@@ -125,10 +125,11 @@ fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
 msg() {
     message="$*"
-    printf '[%s] %12s %*s: %s\n' \
+    printf '[%s] %12s %*s %s: %s\n' \
         "$(date +'%Y-%m-%d %H:%M:%S')" \
         "$myname" \
         "$PIDWIDTH" "$mypid" \
+        "$version" \
         "$message"
 
 }
@@ -262,7 +263,7 @@ rm -f "$PIPE_FILE" "$QUEUE_FILE"
 mkfifo -m 600 "$PIPE_FILE"
 touch "$QUEUE_FILE"
 
-msg "Daemon version $version started"
+msg "Daemon started"
 
 # run tweak scripts immediately
 remaps
