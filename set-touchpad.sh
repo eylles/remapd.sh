@@ -113,9 +113,9 @@ dev_set_prop () {
     value="$4"
     curr_val="$(get_dev_prop "$dev_id" "$prop")"
     if [ "$value" != "$curr_val" ]; then
+        msgp "$dev_id" "$dev_name" "setting" "$prop" "$value"
         # shellcheck disable=2086
         # we DO want word splitting for the values to be applied correctly
-        msgp "$dev_id" "$dev_name" "setting" "$prop" "$value"
         xinput set-prop "$dev_id" "$prop" $value
     fi
 }
