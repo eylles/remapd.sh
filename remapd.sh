@@ -219,7 +219,8 @@ main() {
                             "")
                                 # An empty line signals the end of a hardware uevent block
                                 if [ "$is_add" -eq 1 ]; then
-                                    if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
+                                    if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || \
+                                        [ "$is_gamepad" -eq 1 ]; then
 
                                         # debounce spikes
                                         milis=$(shuf -i 300-700 -n 1)
