@@ -99,11 +99,23 @@ msgp () {
 }
 
 get_touchpads () {
-    xinput | awk 'match($0, /**Touchpad/){ gsub(/⎜   ↳ /,"",$0)gsub(/ /,"_",$0)gsub(/__/,"",$0)gsub(/_Touchpad/,"",$0)gsub(/**id=/,"",$0); print $1"::"$2 }'
+    xinput | \
+        awk '
+            match($0, /**Touchpad/){
+                gsub(/⎜   ↳ /,"",$0)
+                gsub(/ /,"_",$0)
+                gsub(/__/,"",$0)
+                gsub(/_Touchpad/,"",$0)
+                gsub(/**id=/,"",$0);
+                print $1"::"$2
+            }
+            '
 }
 
 get_dev_prop () {
-    xinput list-props "$1" | grep -m1 "$2" | awk -F ':' '{gsub(/\t/, "");gsub(/^[[:space:]]+|[[:space:]]+$/, "");print $2}'
+    xinput list-props "$1" | \
+        grep -m1 "$2" | \
+        awk -F ':' '{gsub(/\t/, "");gsub(/^[[:space:]]+|[[:space:]]+$/, "");print $2}'
 }
 
 dev_set_prop () {
