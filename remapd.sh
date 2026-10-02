@@ -168,9 +168,10 @@ ipc_handler() {
         WORK_FILE="$QUEUE_FILE.${timestamp}.work"
         mv "$QUEUE_FILE" "$WORK_FILE"
         touch "$QUEUE_FILE"
-        
+
         while read -r ACTION; do
             [ -z "$ACTION" ] && continue
+            msg "processing acton: '$ACTION'"
             case "$ACTION" in
                 "status")        msg "Daemon is running" ;;
                 "remap")         remaps ;;
@@ -208,14 +209,14 @@ main() {
                 msg "starting udevadm instance"
                 # Monitor environment blocks and parse in real-time using a shell loop
                 udevadm monitor --environment --subsystem=input | {
-                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0 
+                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0
                     while read -r line; do
                         case "$line" in
                             ACTION=add)          is_add=1 ;;
                             ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
                             ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
                             ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
-                            "") 
+                            "")
                                 # An empty line signals the end of a hardware uevent block
                                 if [ "$is_add" -eq 1 ]; then
                                     if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || [ "$is_gamepad" -eq 1 ]; then
