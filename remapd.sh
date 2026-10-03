@@ -174,9 +174,9 @@ ipc_handler() {
             msg "processing acton: '$ACTION'"
             case "$ACTION" in
                 "status")        msg "Daemon is running" ;;
-                "remap")         remaps ;;
-                "gamepad")       set-gamepad ;;
-                "touchpad")      set-touchpad ;;
+                "remap")         remaps & ;;
+                "gamepad")       set-gamepad & ;;
+                "touchpad")      set-touchpad & ;;
                 "stop")          RUNNING=0 ;;
             esac
         done < "$WORK_FILE"
