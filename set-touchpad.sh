@@ -14,7 +14,7 @@ natscrol=1
 accel="-0.050000"
 
 # touchpad transformation matrix
-sensitivity_matrix="1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000"
+tp_matrix="1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000"
 
 # always produce output regardless of script being ran from the daemon or a terminal
 always_output=""
@@ -43,8 +43,8 @@ natscrol="$natscrol"
 # acceleration
 accel="$accel"
 
-# touchpad transformation matrix
-sensitivity_matrix="$sensitivity_matrix"
+# touchpad 3x3 sensitivity transformation matrix
+tp_matrix="$tp_matrix"
 
 always_output="$always_output"
 __HEREDOC__
@@ -140,5 +140,5 @@ for touchpad in $(get_touchpads) ; do
     dev_set_prop "$touchpad_name" "$touchpad_id" 'libinput Tapping Enabled' "$tapping"
     dev_set_prop "$touchpad_name" "$touchpad_id" 'libinput Natural Scrolling Enabled' "$natscrol"
     dev_set_prop "$touchpad_name" "$touchpad_id" 'libinput Accel Speed' "$accel"
-    dev_set_prop "$touchpad_name" "$touchpad_id" 'Coordinate Transformation Matrix' "$sensitivity_matrix"
+    dev_set_prop "$touchpad_name" "$touchpad_id" 'Coordinate Transformation Matrix' "$tp_matrix"
 done
