@@ -268,7 +268,7 @@ touch "$QUEUE_FILE"
 msg "Daemon started"
 
 # run tweak scripts immediately
-remaps
 set-touchpad
+remaps
 
 main
