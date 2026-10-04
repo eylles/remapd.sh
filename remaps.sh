@@ -18,6 +18,9 @@ repeats_second=60
 # miliseconds a key needs to be pressed before being treated as held
 press_ms=150
 
+# if set to any non empty string function output won't be redirected to dev/null
+no_silent_output=""
+
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
 #config file
@@ -50,6 +53,10 @@ repeats_second="$repeats_second"
 
 # miliseconds a key needs to be pressed before being treated as held
 press_ms="$press_ms"
+
+# disable silent output, when set to any non empty value the output of the
+# commads used to set the remaps will not be suppressed, useful for debugging
+no_silent_output=""
 __HEREDOC__
 fi
 
@@ -106,4 +113,9 @@ set_remaps() {
 }
 
 msg "applying keyboard remaps"
-set_remaps >/dev/null 2>&1
+
+if [ -z "$no_silent_output" ]; then
+    set_remaps >/dev/null 2>&1
+else
+    set_remaps
+fi
