@@ -91,6 +91,11 @@ msg() {
 
 }
 
+get_capsandnums() {
+    # xset q | awk '/00: Caps Lock:/ { print "CAPS=" $4 "::""NUMS=" $8 }'
+    xset q | awk '/00: Caps Lock:/ { print $4 "::" $8 }'
+}
+
 set_remaps() {
     # set keyboard layouts
     setxkbmap -model "$model" -layout "$layouts" -option ""
