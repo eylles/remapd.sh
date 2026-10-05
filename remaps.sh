@@ -112,6 +112,11 @@ toggle_caps_nums_if_on() {
 }
 
 set_remaps() {
+    CAPSANDNUMS="$(get_capsandnums)"
+    CAPS="${CAPSANDNUMS%%::*}"
+    NUMS="${CAPSANDNUMS##*::}"
+    # toggle off caps lock and nums lock if on to prevent messing with xmodmap
+    toggle_caps_nums_if_on "$CAPS" "$NUMS"
     # set keyboard layouts
     setxkbmap -model "$model" -layout "$layouts" -option ""
     # set repeat rate '$repeats_second' and auto repeat delay '$repeat_delay'ms"
@@ -130,6 +135,8 @@ set_remaps() {
     # When Shift_R is pressed only once, treat it as caps
     killall xcape
     xcape -t "$press_ms" -e 'Super_L=Escape;Hyper_R=Caps_Lock'
+    # toggle caps lock and nums lock to restore the previous status if any of them was on
+    toggle_caps_nums_if_on "$CAPS" "$NUMS"
 }
 
 msg "applying keyboard remaps"
