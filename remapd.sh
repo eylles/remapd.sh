@@ -177,6 +177,7 @@ ipc_handler() {
                 "remap")         remaps & ;;
                 "gamepad")       set-gamepad & ;;
                 "touchpad")      set-touchpad & ;;
+                "clean udevadm") clean_udevadm_instances ;;
                 "stop")          RUNNING=0 ;;
             esac
         done < "$WORK_FILE"
@@ -267,7 +268,9 @@ touch "$QUEUE_FILE"
 
 msg "Daemon started"
 
-# run tweak scripts immediately
+#########################################
+##### run tweak scripts immediately #####
+#########################################
 set-touchpad &
 remaps &
 
