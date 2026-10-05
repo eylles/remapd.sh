@@ -96,6 +96,21 @@ get_capsandnums() {
     xset q | awk '/00: Caps Lock:/ { print $4 "::" $8 }'
 }
 
+toggle_caps_nums_if_on() {
+    capslock_status="$1"
+    numslock_status="$2"
+    case "$capslock_status" in
+        "on")
+            xdotool key Caps_Lock
+            ;;
+    esac
+    case "$numslock_status" in
+        "on")
+            xdotool key Num_Lock
+            ;;
+    esac
+}
+
 set_remaps() {
     # set keyboard layouts
     setxkbmap -model "$model" -layout "$layouts" -option ""
