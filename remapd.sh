@@ -189,6 +189,34 @@ nudge() {
     kill -USR1 "$mypid" 2>/dev/null
 }
 
+udevadm_lifecycle_watchdog() {
+    # Keep track of when the stream was kicked off
+    launch_time=$(date +%s)
+
+    # Run continuously in the background subshell
+    while [ "$RUNNING" -eq 1 ]; do
+        sleep 60
+
+        # Check if udevadm is actually running before calculation
+        if pid_tree_search "$mypid" "udevadm" >/dev/null; then
+            current_time=$(date +%s)
+            elapsed=$((current_time - launch_time))
+
+            # 20 minutes = 1200 seconds
+            if [ "$elapsed" -ge 1200 ]; then
+                msg "Watchdog threshold reached (20 mins). Queueing clean up..."
+                echo "clean udevadm" >> "$PIPE_FILE"
+
+                # Reset the baseline clock for the next upcoming cycle
+                launch_time=$(date +%s)
+            fi
+        else
+            # If udevadm died or hasn't started yet, reset baseline to current time
+            launch_time=$(date +%s)
+        fi
+    done
+}
+
 udevadm_devices_monitoring_stream() {
     msg "starting udevadm instance"
     # Monitor environment blocks and parse in real-time using a shell loop
@@ -239,6 +267,8 @@ main() {
         done
     ) &
     READER_PID=$!
+    udevadm_lifecycle_watchdog &
+    WATCHDOG_PID=$!
     # event loop
     while [ "$RUNNING" -eq 1 ]; do
         UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
@@ -256,6 +286,10 @@ main() {
     if kill -0 "$READER_PID" 2>/dev/null; then
         kill "$READER_PID" 2>/dev/null
         msg "reader '$READER_PID' killed"
+    fi
+    if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
+        kill "$WATCHDOG_PID" 2>/dev/null
+        msg "watcher '$WATCHDOG_PID' killed"
     fi
 }
 
