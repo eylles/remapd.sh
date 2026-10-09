@@ -38,13 +38,12 @@ RUNNING=1
 myname="${0##*/}"
 version="@VERSION@"
 
+export mypid
+
 ############
 # RUN VARS #
 ############
 
-# named pipe
-# default: ${RUN_FILES_LOC}/remapd_${mypid}.fifo
-PIPE_FILE="${RUN_FILES_LOC}/remapd_${mypid}.fifo"
 # queue file
 # default: ${RUN_FILES_LOC}/remapd_${mypid}.queue
 QUEUE_FILE="${RUN_FILES_LOC}/remapd_${mypid}.queue"
@@ -149,7 +148,7 @@ cleanup() {
     clean_udevadm_instances
 
     # Clean IPC assets
-    rm -f "$PIPE_FILE" "$QUEUE_FILE"
+    rm -f "$QUEUE_FILE"
     exit 0
 }
 
@@ -205,7 +204,8 @@ udevadm_lifecycle_watchdog() {
             # 20 minutes = 1200 seconds
             if [ "$elapsed" -ge 1200 ]; then
                 msg "Watchdog threshold reached (20 mins). Queueing clean up..."
-                echo "clean udevadm" >> "$PIPE_FILE"
+                echo "clean udevadm" >> "$QUEUE_FILE"
+                nudge
 
                 # Reset the baseline clock for the next upcoming cycle
                 launch_time=$(date +%s)
@@ -242,7 +242,7 @@ udevadm_devices_monitoring_stream() {
                             if [ "$is_pad" -eq 1 ]; then echo "touchpad"; fi
                             if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
 
-                            break
+                            nudge
                         fi
                     fi
                     # Reset flags for the next block if this one didn't match
@@ -250,43 +250,24 @@ udevadm_devices_monitoring_stream() {
                     ;;
             esac
         done
-    } >> "$PIPE_FILE"
+    } >> "$QUEUE_FILE"
 
 }
 
 main() {
-    # Background Reader
-    (
-        while true; do
-            if read -r line < "$PIPE_FILE"; then
-                if [ -n "$line" ]; then
-                    printf "%s\n" "$line" >> "$QUEUE_FILE"
-                    nudge
-                fi
-            fi
-        done
-    ) &
-    READER_PID=$!
     udevadm_lifecycle_watchdog &
     WATCHDOG_PID=$!
     # event loop
     while [ "$RUNNING" -eq 1 ]; do
         UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
-            (
-                udevadm_devices_monitoring_stream
-                clean_udevadm_instances
-            ) &
+            udevadm_devices_monitoring_stream &
+            UDEVMONPID=$!
         fi
 
         # Safe block synchronization check
-        wait "$READER_PID" 2>/dev/null
-        UDEVMONPID=""
+        wait "$UDEVMONPID" 2>/dev/null
     done
-    if kill -0 "$READER_PID" 2>/dev/null; then
-        kill "$READER_PID" 2>/dev/null
-        msg "reader '$READER_PID' killed"
-    fi
     if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
         kill "$WATCHDOG_PID" 2>/dev/null
         msg "watcher '$WATCHDOG_PID' killed"
@@ -301,8 +282,7 @@ trap cleanup EXIT
 
 # initialize named pipe
 mkdir -p "$RUN_FILES_LOC"
-rm -f "$PIPE_FILE" "$QUEUE_FILE"
-mkfifo -m 600 "$PIPE_FILE"
+rm -f "$QUEUE_FILE"
 touch "$QUEUE_FILE"
 
 msg "Daemon started"
