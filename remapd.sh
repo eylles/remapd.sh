@@ -189,6 +189,43 @@ nudge() {
     kill -USR1 "$mypid" 2>/dev/null
 }
 
+udevadm_devices_monitoring_stream() {
+    msg "starting udevadm instance"
+    # Monitor environment blocks and parse in real-time using a shell loop
+    udevadm monitor --environment --subsystem=input | {
+        is_add=0; is_kbd=0; is_pad=0; is_gamepad=0
+        while read -r line; do
+            case "$line" in
+                ACTION=add)          is_add=1 ;;
+                ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
+                ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
+                ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
+                "")
+                    # An empty line signals the end of a hardware uevent block
+                    if [ "$is_add" -eq 1 ]; then
+                        if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || \
+                            [ "$is_gamepad" -eq 1 ]; then
+
+                            # debounce spikes
+                            milis=$(shuf -i 300-700 -n 1)
+                            sleep "0.${milis}"
+
+                            if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
+                            if [ "$is_pad" -eq 1 ]; then echo "touchpad"; fi
+                            if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
+
+                            break
+                        fi
+                    fi
+                    # Reset flags for the next block if this one didn't match
+                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
+                    ;;
+            esac
+        done
+    } >> "$PIPE_FILE"
+
+}
+
 main() {
     # Background Reader
     (
@@ -207,39 +244,7 @@ main() {
         UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
             (
-                msg "starting udevadm instance"
-                # Monitor environment blocks and parse in real-time using a shell loop
-                udevadm monitor --environment --subsystem=input | {
-                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0
-                    while read -r line; do
-                        case "$line" in
-                            ACTION=add)          is_add=1 ;;
-                            ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
-                            ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
-                            ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
-                            "")
-                                # An empty line signals the end of a hardware uevent block
-                                if [ "$is_add" -eq 1 ]; then
-                                    if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || \
-                                        [ "$is_gamepad" -eq 1 ]; then
-
-                                        # debounce spikes
-                                        milis=$(shuf -i 300-700 -n 1)
-                                        sleep "0.${milis}"
-
-                                        if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
-                                        if [ "$is_pad" -eq 1 ]; then echo "touchpad"; fi
-                                        if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
-
-                                        break
-                                    fi
-                                fi
-                                # Reset flags for the next block if this one didn't match
-                                is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
-                                ;;
-                        esac
-                    done
-                } >> "$PIPE_FILE"
+                udevadm_devices_monitoring_stream
                 clean_udevadm_instances
             ) &
         fi
