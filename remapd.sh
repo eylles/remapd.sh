@@ -181,6 +181,8 @@ ipc_handler() {
             esac
         done < "$WORK_FILE"
         rm -f "$WORK_FILE"
+        sleep 1.225
+        clean_udevadm_instances
     fi
 }
 
