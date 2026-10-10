@@ -193,19 +193,20 @@ nudge() {
 udevadm_lifecycle_watchdog() {
     # Keep track of when the stream was kicked off
     launch_time=$(date +%s)
+    one_minute=60
 
     # Run continuously in the background subshell
     while [ "$RUNNING" -eq 1 ]; do
-        sleep 60
+        sleep "$one_minute"
 
         # Check if udevadm is actually running before calculation
         if pid_tree_search "$mypid" "udevadm" >/dev/null; then
             current_time=$(date +%s)
             elapsed=$((current_time - launch_time))
 
-            # 20 minutes = 1200 seconds
-            if [ "$elapsed" -ge 1200 ]; then
-                msg "Watchdog threshold reached (20 mins). Queueing clean up..."
+            minutes=45
+            lifetime_threshold=$((minutes * one_minute))
+            if [ "$elapsed" -ge "$lifetime_threshold" ]; then
                 echo "clean udevadm" >> "$QUEUE_FILE"
                 nudge
 
