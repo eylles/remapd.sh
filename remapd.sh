@@ -265,8 +265,7 @@ main() {
             UDEVMONPID=$!
         fi
 
-        # Safe block synchronization check
-        wait "$UDEVMONPID" 2>/dev/null
+        sleep 5.325
     done
     if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
         kill "$WATCHDOG_PID" 2>/dev/null
