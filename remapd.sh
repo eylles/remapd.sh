@@ -228,28 +228,37 @@ udevadm_devices_monitoring_stream() {
         while read -r line; do
             case "$line" in
                 ACTION=add)          is_add=1 ;;
-                ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=1 ;;
-                ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=1 ;;
-                ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=1 ;;
+                ID_INPUT_KEYBOARD=1) [ "$is_add" -eq 1 ] && is_kbd=$((is_kbd + 1)) ;;
+                ID_INPUT_TOUCHPAD=1) [ "$is_add" -eq 1 ] && is_pad=$((is_pad + 1)) ;;
+                ID_INPUT_JOYSTICK=1) [ "$is_add" -eq 1 ] && is_gamepad=$((is_gamepad + 1)) ;;
                 "")
                     # An empty line signals the end of a hardware uevent block
                     if [ "$is_add" -eq 1 ]; then
-                        if [ "$is_kbd" -eq 1 ] || [ "$is_pad" -eq 1 ] || \
-                            [ "$is_gamepad" -eq 1 ]; then
+                        if [ "$is_kbd" -ge 1 ] || [ "$is_pad" -ge 1 ] || \
+                            [ "$is_gamepad" -ge 1 ]; then
 
                             # debounce spikes
                             milis=$(shuf -i 300-700 -n 1)
                             sleep "0.${milis}"
 
-                            if [ "$is_kbd" -eq 1 ]; then echo "remap"; fi
-                            if [ "$is_pad" -eq 1 ]; then echo "touchpad"; fi
-                            if [ "$is_gamepad" -eq 1 ]; then echo "gamepad"; fi
+                            if [ "$is_kbd" -eq 1 ]; then
+                                echo "remap"
+                                is_kbd=$((is_kbd + 1))
+                            fi
+                            if [ "$is_pad" -eq 1 ]; then
+                                echo "touchpad"
+                                is_pad=$((is_pad + 1))
+                            fi
+                            if [ "$is_gamepad" -eq 1 ]; then
+                                echo "gamepad"
+                                is_gamepad=$((is_gamepad + 1))
+                            fi
 
                             nudge
                         fi
                     fi
                     # Reset flags for the next block if this one didn't match
-                    is_add=0; is_kbd=0; is_pad=0; is_gamepad=0;
+                    is_add=0
                     ;;
             esac
         done
