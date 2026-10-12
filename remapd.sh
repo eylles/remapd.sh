@@ -237,10 +237,6 @@ udevadm_devices_monitoring_stream() {
                         if [ "$is_kbd" -ge 1 ] || [ "$is_pad" -ge 1 ] || \
                             [ "$is_gamepad" -ge 1 ]; then
 
-                            # debounce spikes
-                            milis=$(shuf -i 300-700 -n 1)
-                            sleep "0.${milis}"
-
                             if [ "$is_kbd" -eq 1 ]; then
                                 echo "remap"
                                 is_kbd=$((is_kbd + 1))
