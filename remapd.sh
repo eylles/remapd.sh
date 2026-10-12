@@ -8,6 +8,10 @@
 # default: $XDG_RUNTIME_DIR/remapd
 RUN_FILES_LOC="$XDG_RUNTIME_DIR/remapd"
 
+# max minutes an udevadm instance can exist for
+# by default 135 minutes
+udevadm_instance_lifetime=135
+
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
 #config file
@@ -25,6 +29,9 @@ else
 
 # default location for pipe and queue files
 RUN_FILES_LOC="\$XDG_RUNTIME_DIR/remapd"
+
+# max amount of minuts an udevadm instance may exist for
+udevadm_instance_lifetime=$udevadm_instance_lifetime
 __HEREDOC__
 fi
 
@@ -208,7 +215,7 @@ udevadm_lifecycle_watchdog() {
             current_time=$(date +%s)
             elapsed=$((current_time - launch_time))
 
-            minutes=95
+            minutes=$udevadm_instance_lifetime
             lifetime_threshold=$((minutes * one_minute))
             if [ "$elapsed" -ge "$lifetime_threshold" ]; then
                 echo "clean udevadm" >> "$QUEUE_FILE"
