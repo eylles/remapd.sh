@@ -197,14 +197,18 @@ udevadm_lifecycle_watchdog() {
 
     # Run continuously in the background subshell
     while [ "$RUNNING" -eq 1 ]; do
-        sleep "$one_minute"
+        rnd_secs=$(shuf -i 1-9 -n 1)
+        rnd_mili=$(shuf -i 100-950 -n 1)
+        secs=$((one_minute + rnd_secs))
+        sleep_time="${secs}.${rnd_mili}"
+        sleep "$sleep_time"
 
         # Check if udevadm is actually running before calculation
         if pid_tree_search "$mypid" "udevadm" >/dev/null; then
             current_time=$(date +%s)
             elapsed=$((current_time - launch_time))
 
-            minutes=45
+            minutes=95
             lifetime_threshold=$((minutes * one_minute))
             if [ "$elapsed" -ge "$lifetime_threshold" ]; then
                 echo "clean udevadm" >> "$QUEUE_FILE"
@@ -270,10 +274,12 @@ main() {
         UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
         if [ -z "$UDEVMONPID" ]; then
             udevadm_devices_monitoring_stream &
-            UDEVMONPID=$!
         fi
 
-        sleep 5.325
+        seconds=$(shuf -i 3-7 -n 1)
+        milisec=$(shuf -i 100-950 -n 1)
+        main_sleep_time="${seconds}.${milisec}"
+        sleep "$main_sleep_time"
     done
     if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
         kill "$WATCHDOG_PID" 2>/dev/null
