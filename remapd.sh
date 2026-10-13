@@ -169,11 +169,11 @@ sig_handler() {
 
 ipc_handler() {
     if [ -s "$QUEUE_FILE" ]; then
-        msg "processing $QUEUE_FILE"
         timestamp=$(date '+%s%3N')
         WORK_FILE="$QUEUE_FILE.${timestamp}.work"
         mv "$QUEUE_FILE" "$WORK_FILE"
         touch "$QUEUE_FILE"
+        msg "processing $QUEUE_FILE as $WORK_FILE"
 
         while read -r ACTION; do
             [ -z "$ACTION" ] && continue
