@@ -192,7 +192,7 @@ clean_udevadm_instances() {
         udevmon_pid=$(pid_tree_search "$mypid" "udevadm")
         if [ -n "$udevmon_pid" ] && kill -0 "$udevmon_pid" 2>/dev/null; then
             kill "$udevmon_pid" 2>/dev/null
-            msg "udevadm instance '$udevmon_pid' killed"
+            msg "dbg" "udevadm instance '$udevmon_pid' killed"
         fi
     done
 }
@@ -220,13 +220,13 @@ ipc_handler() {
         WORK_FILE="$QUEUE_FILE.${timestamp}.work"
         mv "$QUEUE_FILE" "$WORK_FILE"
         touch "$QUEUE_FILE"
-        msg "processing $QUEUE_FILE as $WORK_FILE"
+        msg "inf" "processing $QUEUE_FILE as $WORK_FILE"
 
         while read -r ACTION; do
             [ -z "$ACTION" ] && continue
-            msg "processing acton: '$ACTION'"
+            msg "inf" "processing acton: '$ACTION'"
             case "$ACTION" in
-                "status")        msg "Daemon is running" ;;
+                "status")        msg "inf" "Daemon is running" ;;
                 "remap")         remaps & ;;
                 "gamepad")       set-gamepad & ;;
                 "touchpad")      set-touchpad & ;;
@@ -279,7 +279,7 @@ udevadm_lifecycle_watchdog() {
 }
 
 udevadm_devices_monitoring_stream() {
-    msg "starting udevadm instance"
+    msg "dbg" "starting udevadm instance"
     # Monitor environment blocks and parse in real-time using a shell loop
     udevadm monitor --environment --subsystem=input | {
         is_add=0; is_kbd=0; is_pad=0; is_gamepad=0
@@ -337,7 +337,7 @@ main() {
     done
     if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
         kill "$WATCHDOG_PID" 2>/dev/null
-        msg "watcher '$WATCHDOG_PID' killed"
+        msg "dbg" "watcher '$WATCHDOG_PID' killed"
     fi
 }
 
@@ -352,7 +352,7 @@ mkdir -p "$RUN_FILES_LOC"
 rm -f "$QUEUE_FILE"
 touch "$QUEUE_FILE"
 
-msg "Daemon started"
+msg "inf" "Daemon started"
 
 #########################################
 ##### run tweak scripts immediately #####
