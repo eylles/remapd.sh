@@ -12,6 +12,16 @@ RUN_FILES_LOC="$XDG_RUNTIME_DIR/remapd"
 # by default 135 minutes
 udevadm_instance_lifetime=135
 
+# Type: int
+# possible values:
+#   0  -  logging disabled
+#   1  -  show info messages
+#   2  -  show error messages
+#   3  -  show debug messages
+# -------------------------------------------
+# default: 1
+LOG_LEVEL=1
+
 conf_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/remapd"
 
 #config file
@@ -32,6 +42,15 @@ RUN_FILES_LOC="\$XDG_RUNTIME_DIR/remapd"
 
 # max amount of minuts an udevadm instance may exist for
 udevadm_instance_lifetime=$udevadm_instance_lifetime
+
+# daemon log level, this controls the messages shown by the daemon
+#   0  -  logging disabled
+#   1  -  show info messages
+#   2  -  show error messages
+#   3  -  show debug messages
+# -------------------------------------------
+# default: 1
+LOG_LEVEL="$LOG_LEVEL"
 __HEREDOC__
 fi
 
@@ -129,14 +148,42 @@ if [ -n "$pw" ]; then
     PIDWIDTH="$pw"
 fi
 PIDWIDTH="$(( PIDWIDTH + 2 ))"
+# Return type: void
+# Usage: msg "level" "message"
+# log level can be:
+#     inf
+#     err
+#     dbg
 msg() {
+    priority="$1"
+    shift
     message="$*"
-    printf '[%s] %12s %*s %s: %s\n' \
-        "$(date +'%Y-%m-%d %H:%M:%S')" \
-        "$myname" \
-        "$PIDWIDTH" "$mypid" \
-        "$version" \
-        "$message"
+    should_log=""
+    case "$priority" in
+      inf)
+        if [ "$LOG_LEVEL" -gt 0 ]; then
+          should_log="true"
+        fi
+        ;;
+      err)
+        if [ "$LOG_LEVEL" -gt 1 ]; then
+          should_log="true"
+        fi
+        ;;
+      dbg)
+        if [ "$LOG_LEVEL" -gt 2 ]; then
+          should_log="true"
+        fi
+        ;;
+    esac
+    if [ -n "$should_log" ]; then
+        printf '[%s] %12s %*s %s: %s\n' \
+            "$(date +'%Y-%m-%d %H:%M:%S')" \
+            "$myname" \
+            "$PIDWIDTH" "$mypid" \
+            "$version" \
+            "$message"
+    fi
 
 }
 
