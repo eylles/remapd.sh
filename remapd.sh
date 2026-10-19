@@ -8,10 +8,6 @@
 # default: $XDG_RUNTIME_DIR/remapd
 RUN_FILES_LOC="$XDG_RUNTIME_DIR/remapd"
 
-# max minutes an udevadm instance can exist for
-# by default 135 minutes
-udevadm_instance_lifetime=135
-
 # Type: int
 # possible values:
 #   0  -  logging disabled
@@ -39,9 +35,6 @@ else
 
 # default location for pipe and queue files
 RUN_FILES_LOC="\$XDG_RUNTIME_DIR/remapd"
-
-# max amount of minuts an udevadm instance may exist for
-udevadm_instance_lifetime=$udevadm_instance_lifetime
 
 # daemon log level, this controls the messages shown by the daemon
 #   0  -  logging disabled
@@ -244,40 +237,6 @@ nudge() {
     kill -USR1 "$mypid" 2>/dev/null
 }
 
-udevadm_lifecycle_watchdog() {
-    # Keep track of when the stream was kicked off
-    launch_time=$(date +%s)
-    one_minute=60
-
-    # Run continuously in the background subshell
-    while [ "$RUNNING" -eq 1 ]; do
-        rnd_secs=$(shuf -i 1-9 -n 1)
-        rnd_mili=$(shuf -i 100-950 -n 1)
-        secs=$((one_minute + rnd_secs))
-        sleep_time="${secs}.${rnd_mili}"
-        sleep "$sleep_time"
-
-        # Check if udevadm is actually running before calculation
-        if pid_tree_search "$mypid" "udevadm" >/dev/null; then
-            current_time=$(date +%s)
-            elapsed=$((current_time - launch_time))
-
-            minutes=$udevadm_instance_lifetime
-            lifetime_threshold=$((minutes * one_minute))
-            if [ "$elapsed" -ge "$lifetime_threshold" ]; then
-                echo "clean udevadm" >> "$QUEUE_FILE"
-                nudge
-
-                # Reset the baseline clock for the next upcoming cycle
-                launch_time=$(date +%s)
-            fi
-        else
-            # If udevadm died or hasn't started yet, reset baseline to current time
-            launch_time=$(date +%s)
-        fi
-    done
-}
-
 udevadm_devices_monitoring_stream() {
     msg "dbg" "starting udevadm instance"
     # Monitor environment blocks and parse in real-time using a shell loop
@@ -321,8 +280,6 @@ udevadm_devices_monitoring_stream() {
 }
 
 main() {
-    udevadm_lifecycle_watchdog &
-    WATCHDOG_PID=$!
     # event loop
     while [ "$RUNNING" -eq 1 ]; do
         UDEVMONPID=$(pid_tree_search "$mypid" "udevadm")
@@ -335,10 +292,6 @@ main() {
         main_sleep_time="${seconds}.${milisec}"
         sleep "$main_sleep_time"
     done
-    if kill -0 "$WATCHDOG_PID" 2>/dev/null; then
-        kill "$WATCHDOG_PID" 2>/dev/null
-        msg "dbg" "watcher '$WATCHDOG_PID' killed"
-    fi
 }
 
 # assign traps
