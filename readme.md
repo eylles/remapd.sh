@@ -21,3 +21,17 @@ git clone https://github.com/eylles/remapd.sh
 cd remapd.sh
 make install
 ```
+
+# dependencies
+
+- A posix shell interpreter (tested on dash)
+- coreutils
+- pstree
+- udevadm
+- xset
+- xdotool
+- setxkbmap
+- xmodmap
+- xcape
+- xinput
+- [dualsensectl](https://github.com/nowrep/dualsensectl) only for dualsense gamepads
