@@ -92,7 +92,7 @@ for_every_dualsense () {
 
 msg "applying gamepad settings"
 if command -v dualsensectl >/dev/null; then
-    milis=$(shuf -i 150-450 -n 1)
+    milis=$(shuf -i 350-750 -n 1)
     # Give /dev/hidraw creation a split second to finish mounting
     sleep "0.${milis}"
     for_every_dualsense
